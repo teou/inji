@@ -24,8 +24,10 @@
     }
     
     inji.InitDefault()
-    defer inji.Close() //test.Close, dep.Close will be called orderly
+    //test.Close, dep.Close will be called orderly
+    defer inji.Close() 
     inji.RegisterOrFail("target", 123)
-    inji.RegisterOrFail("dep",(*Dep)(nil)) //test will be auto created, test.Start will be called, then dep.Start
+    //test will be auto created, test.Start will be called, then dep.Start
+    inji.RegisterOrFail("dep",(*Dep)(nil)) 
     test, ok := inji.Find("test")
     dep, ok := inji.Find("dep")
