@@ -8,7 +8,7 @@ create new struct on every inject
 	`inject:""` by type,must be a pointer to a struct
 	`inject:"devService"`
 
-3.singleton(default true)
+3.singleton(default false)
 	`singleton:"true"`
 	`singleton:"false"`
 
