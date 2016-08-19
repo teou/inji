@@ -1,4 +1,5 @@
 # inji
+
     inji is a dependency injection container for golang.
     it auto store and register objects into a graph.
     struct pointer dependency will be auto created if 
@@ -7,6 +8,8 @@
     reverse order of their creation.
     
 # use
+
+    ```
     type Test struct {
         Target int `inject:"target"`
     }
@@ -31,3 +34,4 @@
     inji.RegisterOrFail("dep",(*Dep)(nil)) 
     test, ok := inji.Find("test")
     dep, ok := inji.Find("dep")
+    ```
