@@ -11,7 +11,7 @@
 
     ```
     type Test struct {
-        Target int `inject:"target"`
+        Target int "inject:\"target\""
     }
     func (t *Test) Start() error {
         fmt.Println("start", t.Target)
@@ -20,12 +20,11 @@
         fmt.Println("close", t.Target)
     }
     type Dep struct {
-        Test *Test `inject:"test"`
+        Test *Test "inject:\"test\""
     }
     func (d *Dep) Close() {
         fmt.Println("close Dep", d.Test)
     }
-    
     inji.InitDefault()
     //test.Close, dep.Close will be called orderly
     defer inji.Close() 
