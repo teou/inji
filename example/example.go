@@ -1,8 +1,9 @@
-package inji
+package main
 
 import (
 	"fmt"
-	"miot/inji"
+
+	"github.com/teou/inji"
 )
 
 type Te struct {
@@ -26,12 +27,12 @@ func (d *Dep) Close() {
 	fmt.Println("close Dep", d.Test)
 }
 
-func example() {
+func main() {
 	inji.InitDefault()
-	//test.Close, dep.Close will be called orderly
+	//dep.Close, test.Close will be called orderly
 	defer inji.Close()
 	inji.RegisterOrFail("target", 123)
-	//test will be auto created, test.Start will be called, then dep.Start
+	//test will be auto created, test.Start will be called, then dep.Start(if any)
 	inji.RegisterOrFail("dep", (*Dep)(nil))
 	test, _ := inji.Find("test")
 	fmt.Println("find test", test)
