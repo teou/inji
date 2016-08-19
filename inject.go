@@ -140,7 +140,9 @@ func (g *Graph) setboth(name string, o *Object) {
 func (g *Graph) RegisterOrFail(name string, value interface{}) {
 	err := g.Register(name, value)
 	if err != nil {
-		g.Logger.Error(err)
+		if g.Logger != nil {
+			g.Logger.Error(err)
+		}
 		panic(err.Error())
 	}
 }
@@ -148,7 +150,9 @@ func (g *Graph) RegisterOrFail(name string, value interface{}) {
 func (g *Graph) RegisterOrFailSingle(name string, value interface{}) {
 	err := g.RegisterSingle(name, value)
 	if err != nil {
-		g.Logger.Error(err)
+		if g.Logger != nil {
+			g.Logger.Error(err)
+		}
 		panic(err.Error())
 	}
 }
@@ -379,8 +383,9 @@ func (g *Graph) Close() {
 	g.l.Lock()
 	defer g.l.Unlock()
 
-	g.Logger.Info("close objects %v", g.sPrint())
-
+	if g.Logger != nil {
+		g.Logger.Info("close objects %v", g.sPrint())
+	}
 	var keys []string
 	iter := g.named.RevIterFunc()
 	for kv, ok := iter(); ok; kv, ok = iter() {

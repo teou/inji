@@ -85,8 +85,6 @@ func (t *Test3) Test() {
 
 func TestFindByName(t *testing.T) {
 	InitDefault()
-	l := &Log{}
-	SetLogger(l)
 	defer Close()
 	err := Register("test2", (*Test2)(nil))
 	if err == nil {
