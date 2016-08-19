@@ -23,8 +23,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/cevaris/ordered_map"
 	"github.com/facebookgo/structtag"
+	"github.com/teou/ordered_map"
 )
 
 type Logger interface {
