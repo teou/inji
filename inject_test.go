@@ -86,30 +86,38 @@ func (t *Test3) Test() {
 func TestFindByName(t *testing.T) {
 	InitDefault()
 	defer Close()
-	err := Register("test2", (*Test2)(nil))
+	_, err := Register("test2", (*Test2)(nil))
 	if err == nil {
 		t.Error("conf is not registered need error")
 		return
 	}
 
 	i1 := 123
-	err = Register("int1", &i1)
+	_, err = Register("int1", &i1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = Register("conf", "##conf1")
+	_, err = Register("conf", "##conf1")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = Register("test2", (*Test2)(nil))
+
+	var t2tmp interface{}
+	t2tmp, err = Register("test2", (*Test2)(nil))
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = Register("test3", (*Test3)(nil))
+	t2t, ok := t2tmp.(*Test2)
+	if !ok || t2t == nil {
+		t.Error("invalid t2t %v", t2tmp)
+		return
+	}
+
+	_, err = Register("test3", (*Test3)(nil))
 	if err != nil {
 		t.Error(err)
 		return
@@ -213,7 +221,7 @@ func TestCanNil(t *testing.T) {
 	s2 := &Sin1{Name: "s2"}
 	RegisterOrFail("sin2", s2)
 
-	err := Register("s", (*Sin2)(nil))
+	_, err := Register("s", (*Sin2)(nil))
 	if err == nil {
 		t.Error("sin6 not registered should fail!", err)
 		return

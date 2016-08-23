@@ -137,39 +137,41 @@ func (g *Graph) setboth(name string, o *Object) {
 	}
 }
 
-func (g *Graph) RegisterOrFail(name string, value interface{}) {
-	err := g.Register(name, value)
+func (g *Graph) RegisterOrFail(name string, value interface{}) interface{} {
+	v, err := g.Register(name, value)
 	if err != nil {
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
 		panic(err.Error())
 	}
+	return v
 }
 
-func (g *Graph) RegisterOrFailSingle(name string, value interface{}) {
-	err := g.RegisterSingle(name, value)
+func (g *Graph) RegisterOrFailSingle(name string, value interface{}) interface{} {
+	v, err := g.RegisterSingle(name, value)
 	if err != nil {
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
 		panic(err.Error())
 	}
+	return v
 }
 
-func (g *Graph) Register(name string, value interface{}) error {
+func (g *Graph) Register(name string, value interface{}) (interface{}, error) {
 	g.l.Lock()
 	defer g.l.Unlock()
 	return g.register(name, value, false)
 }
 
-func (g *Graph) RegisterSingle(name string, value interface{}) error {
+func (g *Graph) RegisterSingle(name string, value interface{}) (interface{}, error) {
 	g.l.Lock()
 	defer g.l.Unlock()
 	return g.register(name, value, true)
 }
 
-func (g *Graph) register(name string, value interface{}, singleton bool) error {
+func (g *Graph) register(name string, value interface{}, singleton bool) (interface{}, error) {
 	reflectType := reflect.TypeOf(value)
 
 	if isStructPtr(reflectType) {
@@ -178,14 +180,14 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 		}
 	} else {
 		if name == "" {
-			return fmt.Errorf("name can not be empty,name=%s,type=%v", name, reflectType)
+			return nil, fmt.Errorf("name can not be empty,name=%s,type=%v", name, reflectType)
 		}
 	}
 
 	//already registered
 	found, ok := g.find(name)
 	if ok {
-		return fmt.Errorf("already registered,name=%s,type=%v,found=%v", name, reflectType, found)
+		return nil, fmt.Errorf("already registered,name=%s,type=%v,found=%v", name, reflectType, found)
 	}
 
 	o := &Object{
@@ -208,14 +210,14 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 
 			ok, tag, err := structtag.Extract("inject", string(f.Tag))
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if !ok {
 				continue
 			}
 
 			if f.Anonymous || !vf.CanSet() {
-				return fmt.Errorf("inject tag must on a public field!field=%s,type=%s", f.Name, t.Name())
+				return nil, fmt.Errorf("inject tag must on a public field!field=%s,type=%s", f.Name, t.Name())
 				continue
 			}
 
@@ -247,12 +249,12 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 					continue
 				}
 				if isStructPtr(f.Type) {
-					err := g.register(tag, reflect.NewAt(f.Type.Elem(), nil).Interface(), singletonTag)
+					_, err := g.register(tag, reflect.NewAt(f.Type.Elem(), nil).Interface(), singletonTag)
 					if err != nil {
-						return err
+						return nil, err
 					}
 				} else {
-					return fmt.Errorf("dependency field=%s,tag=%s not found in object %s:%v", f.Name, tag, name, reflectType)
+					return nil, fmt.Errorf("dependency field=%s,tag=%s not found in object %s:%v", f.Name, tag, name, reflectType)
 				}
 
 				if tag != "" {
@@ -266,7 +268,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 			}
 
 			if !ok || found == nil {
-				return fmt.Errorf("dependency %s not found in object %s:%v", f.Name, name, reflectType)
+				return nil, fmt.Errorf("dependency %s not found in object %s:%v", f.Name, name, reflectType)
 			}
 
 			reflectFoundValue := reflect.ValueOf(found.Value)
@@ -294,7 +296,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 					case reflect.Int64:
 						vf.SetInt(iv)
 					default:
-						return fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
+						return nil, fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
 					}
 				case reflect.Float32:
 					fallthrough
@@ -306,10 +308,10 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 					case reflect.Float64:
 						vf.SetFloat(fv)
 					default:
-						return fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
+						return nil, fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
 					}
 				default:
-					return fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
+					return nil, fmt.Errorf("dependency name=%s,type=%v not valid in object %s:%v", f.Name, f.Type, name, reflectType)
 				}
 			} else {
 				vf.Set(reflectFoundValue)
@@ -326,6 +328,9 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 		//same as a bean's prototype scope in spring.
 		//otherwise all inject dependency will behave like
 		//spring's singleton bean scope
+		if canNil(value) && isNil(value) {
+			return nil, fmt.Errorf("register nil on name=%s, val=%v", name, value)
+		}
 		o.Value = value
 	}
 
@@ -334,7 +339,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 	if ok {
 		err := canStart.Start()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -347,7 +352,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) error {
 	if g.Logger != nil {
 		g.Logger.Debug("registered!name=%s,t=%v,v=%v", name, reflectType, o.Value)
 	}
-	return nil
+	return o.Value, nil
 }
 
 func (g *Graph) SPrint() string {
@@ -424,6 +429,11 @@ func (g *Graph) Close() {
 
 func isStructPtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
+}
+
+func canNil(v interface{}) bool {
+	k := reflect.ValueOf(v).Kind()
+	return k == reflect.Ptr || k == reflect.Interface
 }
 
 func isNil(v interface{}) bool {

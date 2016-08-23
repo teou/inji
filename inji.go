@@ -16,19 +16,19 @@ func SetLogger(logger Logger) {
 	_g.Logger = logger
 }
 
-func RegisterOrFail(name string, value interface{}) {
-	_g.RegisterOrFail(name, value)
+func RegisterOrFail(name string, value interface{}) interface{} {
+	return _g.RegisterOrFail(name, value)
 }
 
-func Register(name string, value interface{}) error {
+func Register(name string, value interface{}) (interface{}, error) {
 	return _g.Register(name, value)
 }
 
-func RegisterOrFailSingle(name string, value interface{}) {
-	_g.RegisterOrFailSingle(name, value)
+func RegisterOrFailSingle(name string, value interface{}) interface{} {
+	return _g.RegisterOrFailSingle(name, value)
 }
 
-func RegisterSingle(name string, value interface{}) error {
+func RegisterSingle(name string, value interface{}) (interface{}, error) {
 	return _g.RegisterSingle(name, value)
 }
 
