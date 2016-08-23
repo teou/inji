@@ -208,6 +208,12 @@ func (g *Graph) register(name string, value interface{}, singleton bool) (interf
 			vfe := v.Elem()
 			vf := vfe.Field(i)
 
+			if vf.CanInterface() {
+				if !isZeroOfUnderlyingType(vf.Interface()) {
+					continue
+				}
+			}
+
 			ok, tag, err := structtag.Extract("inject", string(f.Tag))
 			if err != nil {
 				return nil, err
@@ -438,4 +444,8 @@ func canNil(v interface{}) bool {
 
 func isNil(v interface{}) bool {
 	return reflect.ValueOf(v).IsNil()
+}
+
+func isZeroOfUnderlyingType(x interface{}) bool {
+	return x == nil || x == reflect.Zero(reflect.TypeOf(x)).Interface()
 }

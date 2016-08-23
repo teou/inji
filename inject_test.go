@@ -320,3 +320,44 @@ func TestIntAssign(t *testing.T) {
 	}
 
 }
+
+func TestIntAssign2(t *testing.T) {
+	fmt.Println("############## test assign2")
+	InitDefault()
+	l := &Log{}
+	SetLogger(l)
+	defer Close()
+
+	var ta int
+	ta = 126
+	RegisterOrFail("a", ta)
+	var tb float64
+	tb = 32.11134
+	RegisterOrFail("b", tb)
+	c := &IA1{
+		A: 999,
+		B: 11.22,
+	}
+	RegisterOrFail("c", c)
+	ia1o, ok := Find("c")
+	if !ok {
+		t.Error("c not found")
+		return
+	}
+	ia1, ok := ia1o.(*IA1)
+	if !ok {
+		t.Error("c invalid")
+		return
+	}
+	if ia1.A != 999 {
+		t.Error("ia1.A invalid %d", ia1.A)
+	} else {
+		fmt.Println("ia1.A", ia1.A)
+	}
+	if ia1.B != 11.22 {
+		t.Error("ia1.B invalid %f", ia1.B)
+	} else {
+		fmt.Println("ia1.B", ia1.B)
+	}
+
+}
