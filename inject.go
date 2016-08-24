@@ -431,6 +431,9 @@ func (g *Graph) Close() {
 	for _, k := range keys {
 		g.del(k)
 	}
+	if g.Logger != nil {
+		g.Logger.Info("inject graph closed all")
+	}
 }
 
 func isStructPtr(t reflect.Type) bool {
@@ -447,5 +450,22 @@ func isNil(v interface{}) bool {
 }
 
 func isZeroOfUnderlyingType(x interface{}) bool {
-	return x == nil || x == reflect.Zero(reflect.TypeOf(x)).Interface()
+	if x == nil {
+		return true
+	}
+	rv := reflect.ValueOf(x)
+	k := rv.Kind()
+	if (k == reflect.Ptr || k == reflect.Interface || k == reflect.Func) && rv.IsNil() {
+		return true
+	}
+
+	switch k {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
+		if rv.Len() <= 0 {
+			return true
+		} else {
+			return false
+		}
+	}
+	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
 }
