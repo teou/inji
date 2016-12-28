@@ -216,7 +216,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) (interf
 
 			ok, tag, err := structtag.Extract("inject", string(f.Tag))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("extract tag fail,f=%s,err=%v", f.Name, err)
 			}
 			if !ok {
 				continue
