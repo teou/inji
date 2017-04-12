@@ -1,8 +1,8 @@
-hash: 0f8fc2a15c782ef3afbc4b493bfa3137af618ddb3973ccf77d515f8135776d81
-updated: 2017-04-12T20:01:11.287996775+08:00
+hash: 1672c90869835061d3af1c872622038e75154ffde2254af0830eb3eec79c3282
+updated: 2017-04-12T20:12:02.155549707+08:00
 imports:
 - name: github.com/facebookgo/structtag
   version: 217e25fb96916cc60332e399c9aa63f5c422ceed
 - name: github.com/teou/ordered_map
-  version: 0bdb06c8d67d1f0f9b5da4ff7a54d7b665df7812
+  version: e38cb3819755c7c0ed312c1ef39532f71b9e30d9
 testImports: []
