@@ -1,0 +1,6 @@
+package: inji
+ignore:
+- github.com/teou/inji
+import:
+- package: github.com/facebookgo/structtag
+- package: github.com/teou/ordered_map
