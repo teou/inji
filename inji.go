@@ -16,12 +16,20 @@ func SetLogger(logger Logger) {
 	_g.Logger = logger
 }
 
+func RegisterOrFailNoFill(name string, value interface{}) interface{} {
+	return _g.RegisterOrFailNoFill(name, value)
+}
+
 func RegisterOrFail(name string, value interface{}) interface{} {
 	return _g.RegisterOrFail(name, value)
 }
 
 func Register(name string, value interface{}) (interface{}, error) {
 	return _g.Register(name, value)
+}
+
+func RegisterOrFailSingleNoFill(name string, value interface{}) interface{} {
+	return _g.RegisterOrFailSingleNoFill(name, value)
 }
 
 func RegisterOrFailSingle(name string, value interface{}) interface{} {

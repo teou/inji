@@ -361,3 +361,40 @@ func TestIntAssign2(t *testing.T) {
 	}
 
 }
+
+type Rec struct {
+	HaHa string `inject:"haha"`
+}
+
+type Rec1 struct {
+	Rec  *Rec  `inject:"rec"`
+	Rec2 *Rec2 `inject:"rec2"`
+}
+
+type Rec2 struct {
+	Rec  *Rec  `inject:"rec"`
+	Rec1 *Rec1 `inject:"rec1"`
+}
+
+//causing a stack overflow error
+func _TestRec(t *testing.T) {
+	fmt.Println("############## test rec")
+	InitDefault()
+	l := &Log{}
+	SetLogger(l)
+	defer Close()
+
+	defer func() {
+		if x := recover(); x != nil {
+			fmt.Println("panic : ", x)
+		}
+	}()
+	haha := "aa"
+	RegisterOrFail("haha", haha)
+
+	//this will cause:
+	//runtime: goroutine stack exceeds 1000000000-byte limit
+	//fatal error: stack overflow
+	RegisterOrFail("rec1", (*Rec1)(nil))
+	RegisterOrFail("rec2", (*Rec2)(nil))
+}

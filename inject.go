@@ -137,6 +137,28 @@ func (g *Graph) setboth(name string, o *Object) {
 	}
 }
 
+func (g *Graph) RegisterOrFailNoFill(name string, value interface{}) interface{} {
+	v, err := g.RegisterNoFill(name, value)
+	if err != nil {
+		if g.Logger != nil {
+			g.Logger.Error(err)
+		}
+		panic(err.Error())
+	}
+	return v
+}
+
+func (g *Graph) RegisterOrFailSingleNoFill(name string, value interface{}) interface{} {
+	v, err := g.RegisterSingleNoFill(name, value)
+	if err != nil {
+		if g.Logger != nil {
+			g.Logger.Error(err)
+		}
+		panic(err.Error())
+	}
+	return v
+}
+
 func (g *Graph) RegisterOrFail(name string, value interface{}) interface{} {
 	v, err := g.Register(name, value)
 	if err != nil {
@@ -159,19 +181,31 @@ func (g *Graph) RegisterOrFailSingle(name string, value interface{}) interface{}
 	return v
 }
 
+func (g *Graph) RegisterNoFill(name string, value interface{}) (interface{}, error) {
+	g.l.Lock()
+	defer g.l.Unlock()
+	return g.register(name, value, false, true)
+}
+
+func (g *Graph) RegisterSingleNoFill(name string, value interface{}) (interface{}, error) {
+	g.l.Lock()
+	defer g.l.Unlock()
+	return g.register(name, value, true, true)
+}
+
 func (g *Graph) Register(name string, value interface{}) (interface{}, error) {
 	g.l.Lock()
 	defer g.l.Unlock()
-	return g.register(name, value, false)
+	return g.register(name, value, false, false)
 }
 
 func (g *Graph) RegisterSingle(name string, value interface{}) (interface{}, error) {
 	g.l.Lock()
 	defer g.l.Unlock()
-	return g.register(name, value, true)
+	return g.register(name, value, true, false)
 }
 
-func (g *Graph) register(name string, value interface{}, singleton bool) (interface{}, error) {
+func (g *Graph) register(name string, value interface{}, singleton bool, noFill bool) (interface{}, error) {
 	reflectType := reflect.TypeOf(value)
 
 	if isStructPtr(reflectType) {
@@ -197,13 +231,19 @@ func (g *Graph) register(name string, value interface{}, singleton bool) (interf
 	if isStructPtr(o.reflectType) {
 		t := reflectType.Elem()
 		var v reflect.Value
+		created := false
 		if isNil(value) {
+			created = true
 			v = reflect.New(t)
 		} else {
 			v = reflect.ValueOf(value)
 		}
 
 		for i := 0; i < t.NumField(); i++ {
+			if !created && noFill {
+				continue
+			}
+
 			f := t.Field(i)
 			vfe := v.Elem()
 			vf := vfe.Field(i)
@@ -255,7 +295,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool) (interf
 					continue
 				}
 				if isStructPtr(f.Type) {
-					_, err := g.register(tag, reflect.NewAt(f.Type.Elem(), nil).Interface(), singletonTag)
+					_, err := g.register(tag, reflect.NewAt(f.Type.Elem(), nil).Interface(), singletonTag, noFill)
 					if err != nil {
 						return nil, err
 					}
