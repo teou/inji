@@ -495,7 +495,12 @@ func isZeroOfUnderlyingType(x interface{}) bool {
 	}
 	rv := reflect.ValueOf(x)
 	k := rv.Kind()
-	if (k == reflect.Ptr || k == reflect.Interface || k == reflect.Func) && rv.IsNil() {
+
+	if k == reflect.Func {
+		return rv.IsNil()
+	}
+
+	if (k == reflect.Ptr || k == reflect.Interface || k == reflect.Chan || k == reflect.Map || k == reflect.Slice) && rv.IsNil() {
 		return true
 	}
 
