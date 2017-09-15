@@ -20,6 +20,10 @@ func RegisterOrFailNoFill(name string, value interface{}) interface{} {
 	return _g.RegisterOrFailNoFill(name, value)
 }
 
+func Reg(name string, value interface{}) interface{} {
+	return RegisterOrFail(name, value)
+}
+
 func RegisterOrFail(name string, value interface{}) interface{} {
 	return _g.RegisterOrFail(name, value)
 }
