@@ -114,7 +114,8 @@ func (g *Graph) find(name string) (*Object, bool) {
 	}
 	ret, ok := f.(*Object)
 	if !ok {
-		g.named.Delete(name)
+		//g.named.Delete(name)
+		panic(fmt.Sprintf("%s in graph is not a *Object, should not happen!", name))
 		return nil, false
 	} else {
 		return ret, true
