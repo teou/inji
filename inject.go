@@ -144,7 +144,7 @@ func (g *Graph) RegisterOrFailNoFill(name string, value interface{}) interface{}
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
-		panic(err.Error())
+		panic(fmt.Sprintf("reg fail,name=%v,err=%v", name, err.Error()))
 	}
 	return v
 }
@@ -155,7 +155,7 @@ func (g *Graph) RegisterOrFailSingleNoFill(name string, value interface{}) inter
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
-		panic(err.Error())
+		panic(fmt.Sprintf("reg fail,name=%v,err=%v", name, err.Error()))
 	}
 	return v
 }
@@ -166,7 +166,7 @@ func (g *Graph) RegisterOrFail(name string, value interface{}) interface{} {
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
-		panic(err.Error())
+		panic(fmt.Sprintf("reg fail,name=%v,err=%v", name, err.Error()))
 	}
 	return v
 }
@@ -177,7 +177,7 @@ func (g *Graph) RegisterOrFailSingle(name string, value interface{}) interface{}
 		if g.Logger != nil {
 			g.Logger.Error(err)
 		}
-		panic(err.Error())
+		panic(fmt.Sprintf("reg fail,name=%v,err=%v", name, err.Error()))
 	}
 	return v
 }
@@ -386,7 +386,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 	if ok {
 		err := canStart.Start()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Start object fail,name=%v,err=%v", name, err)
 		}
 	}
 

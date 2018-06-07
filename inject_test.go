@@ -113,7 +113,7 @@ func TestFindByName(t *testing.T) {
 	}
 	t2t, ok := t2tmp.(*Test2)
 	if !ok || t2t == nil {
-		t.Error("invalid t2t %v", t2tmp)
+		t.Error("invalid t2t ", t2tmp)
 		return
 	}
 
@@ -309,12 +309,12 @@ func TestIntAssign(t *testing.T) {
 		return
 	}
 	if ia1.A != 126 {
-		t.Error("ia1.A invalid %d", ia1.A)
+		t.Error("ia1.A invalid ", ia1.A)
 	} else {
 		fmt.Println("ia1.A", ia1.A)
 	}
 	if ia1.B != 32.11134 {
-		t.Error("ia1.B invalid %f", ia1.B)
+		t.Error("ia1.B invalid ", ia1.B)
 	} else {
 		fmt.Println("ia1.B", ia1.B)
 	}
@@ -350,12 +350,12 @@ func TestIntAssign2(t *testing.T) {
 		return
 	}
 	if ia1.A != 999 {
-		t.Error("ia1.A invalid %d", ia1.A)
+		t.Error("ia1.A invalid ", ia1.A)
 	} else {
 		fmt.Println("ia1.A", ia1.A)
 	}
 	if ia1.B != 11.22 {
-		t.Error("ia1.B invalid %f", ia1.B)
+		t.Error("ia1.B invalid ", ia1.B)
 	} else {
 		fmt.Println("ia1.B", ia1.B)
 	}
