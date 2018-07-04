@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"github.com/facebookgo/structtag"
+	"github.com/teou/implmap"
 	"github.com/teou/ordered_map"
 )
 
@@ -301,7 +302,27 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 						return nil, err
 					}
 				} else {
-					return nil, fmt.Errorf("dependency field=%s,tag=%s not found in object %s:%v", f.Name, tag, name, reflectType)
+					var implFound reflect.Type
+					impls := implmap.Get(tag)
+					for _, impl := range impls {
+						if impl == nil {
+							continue
+						}
+						if impl.AssignableTo(f.Type) {
+							implFound = impl
+							break
+						}
+
+					}
+
+					if implFound != nil {
+						_, err := g.register(tag, reflect.NewAt(implFound.Elem(), nil).Interface(), singletonTag, noFill)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						return nil, fmt.Errorf("dependency field=%s,tag=%s not found in object %s:%v", f.Name, tag, name, reflectType)
+					}
 				}
 
 				if tag != "" {

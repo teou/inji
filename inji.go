@@ -1,6 +1,8 @@
 package inji
 
-import "reflect"
+import (
+	"reflect"
+)
 
 var _g *Graph
 

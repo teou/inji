@@ -5,6 +5,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/teou/implmap"
 )
 
 type Log struct {
@@ -47,9 +49,26 @@ type Test3 struct {
 	Test2 Test `inject:"test2"`
 }
 
+type Test4 struct {
+	Test3 Test `inject:"test3"`
+}
+
+type Test5 struct {
+	Test4 Test `inject:"test4"` //test auto injection via interface
+}
+
 func (t *Test1) Start() error {
 	fmt.Println("test1.start,conf="+t.Conf, *t.Int1)
 	return nil
+}
+
+func (t *Test4) Start() error {
+	fmt.Println("test4.start")
+	return nil
+}
+
+func (t *Test4) Close() {
+	fmt.Println("test4.close")
 }
 
 func (t *Test3) Start() error {
@@ -78,14 +97,27 @@ func (t *Test2) Test() {
 	fmt.Println("test2.test")
 }
 
+func (t *Test5) Test() {
+	t.Test4.Test()
+	fmt.Println("test5.test")
+}
+
+func (t *Test4) Test() {
+	t.Test3.Test()
+	fmt.Println("test4.test")
+}
+
 func (t *Test3) Test() {
 	t.Test2.Test()
 	fmt.Println("test3.test")
 }
 
 func TestFindByName(t *testing.T) {
+	//alway run before inji start, i.e: package.init function
+	implmap.Add("test4", reflect.TypeOf((*Test4)(nil)))
 	InitDefault()
 	defer Close()
+
 	_, err := Register("test2", (*Test2)(nil))
 	if err == nil {
 		t.Error("conf is not registered need error")
@@ -122,6 +154,11 @@ func TestFindByName(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	_, err = Register("test5", (*Test5)(nil))
+	if err != nil {
+		t.Error("test5 registered fail", err)
+		return
+	}
 
 	fmt.Println("###############")
 	fmt.Println("init finished,len=", GraphLen())
@@ -144,9 +181,22 @@ func TestFindByName(t *testing.T) {
 		t.Error("t3 not found", t3o, ok)
 		return
 	}
+	t4o, ok := Find("test4")
+	if !ok || t4o == nil {
+		t.Error("t4 not found", t4o, ok)
+		return
+	}
+	t5o, ok := Find("test5")
+	if !ok || t5o == nil {
+		t.Error("t5 not found", t5o, ok)
+		return
+	}
+
 	t1, _ := t1o.(*Test1)
 	t2, _ := t2o.(*Test2)
 	t3, _ := t3o.(*Test3)
+	t4, _ := t4o.(*Test4)
+	t5, _ := t5o.(*Test5)
 
 	fmt.Println("#################")
 	t1.Test()
@@ -155,6 +205,11 @@ func TestFindByName(t *testing.T) {
 	fmt.Println("#################")
 	t3.Test()
 	fmt.Println("#################")
+	t4.Test()
+	fmt.Println("#################")
+	t5.Test()
+	fmt.Println("#################")
+
 }
 
 type Sin1 struct {
