@@ -1,4 +1,5 @@
 /**
+by liyibo 2016
 1.if singleton, every struct ptr inject object can only have one
 instance in memory, we set twice in named to
 ensure that(first by name, then by struct ptr type)
