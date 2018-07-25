@@ -212,6 +212,27 @@ func TestFindByName(t *testing.T) {
 
 }
 
+type Dep struct {
+	Data []string
+}
+
+type TestDepStruct struct {
+	Dep Dep `inject:"dep"`
+}
+
+func TestInjiStruct(t *testing.T) {
+	InitDefault()
+
+	_, err := Register("dep", Dep{})
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = Register("testDepStruct", (*TestDepStruct)(nil))
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 type Sin1 struct {
 	Name string
 }

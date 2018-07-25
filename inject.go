@@ -535,5 +535,6 @@ func isZeroOfUnderlyingType(x interface{}) bool {
 			return false
 		}
 	}
-	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
+	zeroX := reflect.Zero(reflect.TypeOf(x)).Interface()
+	return reflect.DeepEqual(zeroX, x)
 }
