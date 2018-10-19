@@ -7,7 +7,7 @@
     when closing graph, every object will be closed on a 
     reverse order of their creation.
     
-# use
+# use 
 
 ```go
 
