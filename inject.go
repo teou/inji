@@ -140,6 +140,10 @@ func (g *Graph) setboth(name string, o *Object) {
 	}
 }
 
+func (g *Graph) RegWithoutInjection(name string, value interface{}) interface{} {
+	return g.RegisterOrFailNoFill(name, value)
+}
+
 func (g *Graph) RegisterOrFailNoFill(name string, value interface{}) interface{} {
 	v, err := g.RegisterNoFill(name, value)
 	if err != nil {
@@ -276,8 +280,9 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 				singletonTag = true
 			}
 			_, canNilStr, _ := structtag.Extract("cannil", string(f.Tag))
+			_, nilableStr, _ := structtag.Extract("nilable", string(f.Tag))
 			canNil := false
-			if canNilStr == "true" {
+			if canNilStr == "true" || nilableStr == "true" {
 				canNil = true
 			}
 

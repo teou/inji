@@ -22,6 +22,10 @@ func RegisterOrFailNoFill(name string, value interface{}) interface{} {
 	return _g.RegisterOrFailNoFill(name, value)
 }
 
+func RegWithoutInjection(name string, value interface{}) interface{} {
+	return _g.RegWithoutInjection(name, value)
+}
+
 func Reg(name string, value interface{}) interface{} {
 	return RegisterOrFail(name, value)
 }
