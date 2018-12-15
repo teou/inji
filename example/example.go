@@ -6,21 +6,21 @@ import (
 	"github.com/teou/inji"
 )
 
-type Te struct {
+type Test struct {
 	Target int `inject:"target"`
 }
 
-func (t *Te) Start() error {
+func (t *Test) Start() error {
 	fmt.Println("start", t.Target)
 	return nil
 }
 
-func (t *Te) Close() {
+func (t *Test) Close() {
 	fmt.Println("close", t.Target)
 }
 
 type Dep struct {
-	Test *Te `inject:"test"`
+	Test *Test `inject:"test"`
 }
 
 func (d *Dep) Close() {
