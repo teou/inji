@@ -1,11 +1,8 @@
 # inji
-
-    inji is a dependency injection container for golang.
-    it auto store and register objects into a graph.
-    struct pointer dependency will be auto created if 
-    not found in graph.
-    when closing graph, every object will be closed on a 
-    reverse order of their creation.
+- a dependency injection container for golang.
+- auto store and register objects into a graph.
+- struct pointer dependency will be auto created if not found in graph.
+- when closing graph, every object will be closed on a reverse order of their creation.
     
 # use 
 
