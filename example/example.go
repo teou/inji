@@ -31,11 +31,8 @@ func main() {
 	inji.InitDefault()
 	//dep.Close, test.Close will be called orderly
 	defer inji.Close()
-	inji.RegisterOrFail("target", 123)
+	inji.Reg("target", 123)
 	//test will be auto created, test.Start will be called, then dep.Start(if any)
-	inji.RegisterOrFail("dep", (*Dep)(nil))
-	test, _ := inji.Find("test")
-	fmt.Println("find test", test)
-	dep, _ := inji.Find("dep")
+	dep := inji.Reg("dep", (*Dep)(nil)).(*Dep)
 	fmt.Println("find dep", dep)
 }
