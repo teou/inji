@@ -255,18 +255,22 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 			vfe := v.Elem()
 			vf := vfe.Field(i)
 
-			if vf.CanInterface() {
-				if !isZeroOfUnderlyingType(vf.Interface()) {
-					continue
-				}
-			}
-
 			ok, tag, err := structtag.Extract("inject", string(f.Tag))
 			if err != nil {
 				return nil, fmt.Errorf("extract tag fail,f=%s,err=%v", f.Name, err)
 			}
 			if !ok {
 				continue
+			}
+
+			if vf.CanInterface() {
+				if reflect.ValueOf(vf.Interface()).Kind() == reflect.Struct {
+					return nil, fmt.Errorf("inject a struct field is not supported,field=%v,type=%v", f.Name, t.Name())
+				}
+
+				if !isZeroOfUnderlyingType(vf.Interface()) {
+					continue
+				}
 			}
 
 			if f.Anonymous || !vf.CanSet() {

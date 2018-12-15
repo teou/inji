@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/teou/implmap"
@@ -452,4 +453,29 @@ func _TestRec(t *testing.T) {
 	//fatal error: stack overflow
 	RegisterOrFail("rec1", (*Rec1)(nil))
 	RegisterOrFail("rec2", (*Rec2)(nil))
+}
+
+type Dep struct {
+	Data []string
+}
+type TestDepStruct struct {
+	Dep Dep `inject:"dep"`
+}
+
+func TestInjiStruct(t *testing.T) {
+	InitDefault()
+	_, err := Register("dep", Dep{})
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = Register("testDepStruct", (*TestDepStruct)(nil))
+	if err == nil {
+		t.Error("reg should fail")
+		return
+	}
+	if !strings.Contains(err.Error(), "inject a struct field is not supported") {
+		t.Error("invalid fail msg")
+		return
+	}
+	fmt.Println("struct dep err", err.Error())
 }
