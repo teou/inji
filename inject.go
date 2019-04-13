@@ -20,6 +20,7 @@ create new struct on every inject
 package inji
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sync"
@@ -30,6 +31,7 @@ import (
 )
 
 type Logger interface {
+	IsDebugEnabled() bool
 	Debug(format interface{}, v ...interface{})
 	Info(format interface{}, v ...interface{})
 	Error(format interface{}, v ...interface{}) error
@@ -427,8 +429,9 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 	} else {
 		g.set(name, o)
 	}
-	if g.Logger != nil {
-		g.Logger.Debug("registered!name=%s,t=%v,v=%v", name, reflectType, o.Value)
+	if g.Logger != nil && g.Logger.IsDebugEnabled() {
+		toLogJson, toLogErr := json.Marshal(o.Value)
+		g.Logger.Debug("registered!name=%s,t=%v,v=%v,jsonerr=%v", name, reflectType, string(toLogJson), toLogErr)
 	}
 	return o.Value, nil
 }

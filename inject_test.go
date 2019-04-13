@@ -13,6 +13,10 @@ import (
 type Log struct {
 }
 
+func (l *Log) IsDebugEnabled() bool {
+	return true
+}
+
 func (l *Log) Error(format interface{}, args ...interface{}) error {
 	f, _ := format.(string)
 	s := fmt.Sprintf(f, args...)
