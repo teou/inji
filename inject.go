@@ -22,8 +22,10 @@ package inji
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/facebookgo/structtag"
 	"github.com/teou/implmap"
@@ -417,7 +419,18 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 	//depedency resolved, init the object
 	canStart, ok := o.Value.(Startable)
 	if ok {
+		st := time.Now()
 		err := canStart.Start()
+		cost := time.Now().Sub(st)
+
+		if cost > 5*time.Second {
+			errMsg := fmt.Sprintf("fatal obj start took too long,name=%v,time=%v,err=%v", name, cost, err)
+			fmt.Fprint(os.Stderr, errMsg+"\n")
+			if g.Logger != nil {
+				g.Logger.Error(errMsg)
+			}
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("Start object fail,name=%v,err=%v", name, err)
 		}
