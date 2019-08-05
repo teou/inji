@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/teou/implmap"
@@ -165,11 +164,8 @@ func TestFindByName(t *testing.T) {
 		return
 	}
 
-	fmt.Println("###############")
 	fmt.Println("init finished,len=", GraphLen())
-	fmt.Println("###############")
 	fmt.Println("graph=", GraphPrint())
-	fmt.Println("###############")
 
 	t1o, ok := FindByType(reflect.TypeOf((*Test1)(nil)))
 	if !ok || t1o == nil {
@@ -203,17 +199,11 @@ func TestFindByName(t *testing.T) {
 	t4, _ := t4o.(*Test4)
 	t5, _ := t5o.(*Test5)
 
-	fmt.Println("#################")
 	t1.Test()
-	fmt.Println("#################")
 	t2.Test()
-	fmt.Println("#################")
 	t3.Test()
-	fmt.Println("#################")
 	t4.Test()
-	fmt.Println("#################")
 	t5.Test()
-	fmt.Println("#################")
 
 }
 
@@ -460,26 +450,120 @@ func _TestRec(t *testing.T) {
 }
 
 type Dep struct {
-	Data []string
+	Data  []string
+	Data2 map[string]interface{}
 }
 type TestDepStruct struct {
 	Dep Dep `inject:"dep"`
 }
 
-func TestInjiStruct(t *testing.T) {
+func TestInjiStructMap(t *testing.T) {
 	InitDefault()
-	_, err := Register("dep", Dep{})
+	_, err := Register("dep", Dep{Data2: map[string]interface{}{"abc": 123}})
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = Register("testDepStruct", (*TestDepStruct)(nil))
+	tdso, err := Register("testDepStruct", (*TestDepStruct)(nil))
+	if err != nil {
+		t.Error("reg should not fail")
+		return
+	}
+	tds, ok := tdso.(*TestDepStruct)
+	if !ok {
+		t.Error("tdso should be *TestDepStruct")
+		return
+	}
+	if tds.Dep.Data2["abc"] != 123 {
+		t.Error("tdso.Dep.Data[abc] should be 123")
+	}
+}
+
+func TestInjiStruct(t *testing.T) {
+	InitDefault()
+	_, err := Register("dep", Dep{Data: []string{"abc"}})
+	if err != nil {
+		t.Error(err)
+	}
+	tdso, err := Register("testDepStruct", (*TestDepStruct)(nil))
+	if err != nil {
+		t.Error("reg should not fail")
+		return
+	}
+	tds, ok := tdso.(*TestDepStruct)
+	if !ok {
+		t.Error("tdso should be *TestDepStruct")
+		return
+	}
+	if tds.Dep.Data[0] != "abc" {
+		t.Error("tdso.Dep.Data[0] should be abc")
+	}
+}
+
+func TestInjiEmptyStruct(t *testing.T) {
+	InitDefault()
+	_, err := Register("dep", Dep{Data: []string{}})
+	if err != nil {
+		t.Error(err)
+	}
+	tdso, err := Register("testDepStruct", (*TestDepStruct)(nil))
+	if err != nil {
+		t.Error("reg should not fail")
+		return
+	}
+	tds, ok := tdso.(*TestDepStruct)
+	if !ok {
+		t.Error("tdso should be *TestDepStruct")
+		return
+	}
+	if len(tds.Dep.Data) != 0 {
+		t.Error("tdso.Dep.Data.len should be 0")
+	}
+}
+
+func TestInjiStructWithNoInit(t *testing.T) {
+	InitDefault()
+	_, err := Register("testDepStruct", (*TestDepStruct)(nil))
 	if err == nil {
 		t.Error("reg should fail")
 		return
 	}
-	if !strings.Contains(err.Error(), "inject a struct field is not supported") {
-		t.Error("invalid fail msg")
+	fmt.Println(err.Error())
+}
+
+type SDep struct {
+	Data string
+}
+type STestDepStruct struct {
+	Dep SDep `inject:"dep"`
+}
+type STestDepDep struct {
+	TestDepStruct *STestDepStruct `inject:"testDepStruct"`
+}
+
+func TestInjiStructSDepDep(t *testing.T) {
+	InitDefault()
+	_, err := Register("dep", SDep{Data: "abc"})
+	if err != nil {
+		t.Error(err)
+	}
+	tddo, err := Register("testDepDep", (*STestDepDep)(nil))
+	tdd := tddo.(*STestDepDep)
+	if err != nil {
+		t.Error("reg should not fail")
 		return
 	}
-	fmt.Println("struct dep err", err.Error())
+	if tdd.TestDepStruct.Dep.Data != "abc" {
+		t.Error("tdd.TestDepStruct.Dep.Data !=abc")
+		return
+	}
+}
+
+func TestInjiStructSDepDepFail(t *testing.T) {
+	InitDefault()
+	_, err := Register("testDepDep", (*STestDepDep)(nil))
+	if err == nil {
+		t.Error("reg should fail")
+		return
+	}
+	fmt.Println("TestInjiStructSDepDepFail", err.Error())
 }

@@ -268,10 +268,6 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 			}
 
 			if vf.CanInterface() {
-				if reflect.ValueOf(vf.Interface()).Kind() == reflect.Struct {
-					return nil, fmt.Errorf("inject a struct field is not supported,field=%v,type=%v", f.Name, t.Name())
-				}
-
 				if !isZeroOfUnderlyingType(vf.Interface()) {
 					continue
 				}
@@ -544,6 +540,9 @@ func isZeroOfUnderlyingType(x interface{}) bool {
 	rv := reflect.ValueOf(x)
 	k := rv.Kind()
 
+	if k == reflect.Struct {
+		return reflect.DeepEqual(reflect.New(reflect.TypeOf(x)).Elem().Interface(), x)
+	}
 	if k == reflect.Func {
 		return rv.IsNil()
 	}
