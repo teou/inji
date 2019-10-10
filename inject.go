@@ -533,6 +533,7 @@ func isNil(v interface{}) bool {
 	return reflect.ValueOf(v).IsNil()
 }
 
+// check if x zero
 func isZeroOfUnderlyingType(x interface{}) bool {
 	if x == nil {
 		return true
