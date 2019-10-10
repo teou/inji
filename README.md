@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/teou/inji.svg?branch=master)](https://travis-ci.org/teou/inji)
+[![codecov](https://codecov.io/gh/teou/inji/branch/master/graph/badge.svg)](https://codecov.io/gh/teou/inji)
+
 # inji
 - a dependency injection container for golang. 
 - auto store and register objects into a graph.
