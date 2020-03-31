@@ -420,7 +420,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 		cost := time.Now().Sub(st)
 
 		if cost > 5*time.Second {
-			errMsg := fmt.Sprintf("fatal obj start took too long,name=%v,time=%v,err=%v", name, cost, err)
+			errMsg := fmt.Sprintf("obj start took too long,name=%v,time=%v,err=%v", name, cost, err)
 			fmt.Fprint(os.Stderr, errMsg+"\n")
 			if g.Logger != nil {
 				g.Logger.Error(errMsg)
