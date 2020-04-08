@@ -1,0 +1,6 @@
+github.com/facebookgo/structtag v0.0.0-20150214074306-217e25fb9691 h1:KnnwHN59Jxec0htA2pe/i0/WI9vxXLQifdhBrP3lqcQ=
+github.com/facebookgo/structtag v0.0.0-20150214074306-217e25fb9691/go.mod h1:sKLL1iua/0etWfo/nPCmyz+v2XDMXy+Ho53W7RAuZNY=
+github.com/teou/implmap v0.0.0-20181215111212-373d77bc2b63 h1:WjpidQ6BGiJqdHMd9cWHxIukhuV//NzLxXPmzPDNBfs=
+github.com/teou/implmap v0.0.0-20181215111212-373d77bc2b63/go.mod h1:Ekoq5rk8MC/wSS+tnlE/L2dejHhsi6f/jMK+CHDFAr0=
+github.com/teou/ordered_map v1.0.0 h1:fXFcdoXU49pnDHqFCSzuVUxqZ9efspDc8vkp3Ea+dgc=
+github.com/teou/ordered_map v1.0.0/go.mod h1:ZT3l58ctsa6fpWYlss4y5CpezmmZMSADvt+mEt5xbUY=
