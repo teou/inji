@@ -567,3 +567,32 @@ func TestInjiStructSDepDepFail(t *testing.T) {
 	}
 	fmt.Println("TestInjiStructSDepDepFail", err.Error())
 }
+
+type config4T struct {
+	Abc int
+	Def string
+	Ghi float64
+}
+
+func TestReflectRegFields(t *testing.T) {
+	c := &config4T{
+		Abc: 123,
+		Def: "haha",
+		Ghi: 3.1415,
+	}
+	ret := ReflectRegFields(c)
+	if len(ret) != 3 {
+		t.Fatalf("invalid reflect reg ret %v", ret)
+	}
+	fmt.Println("reflect reg ret", ret)
+	if ret["abc"] != c.Abc {
+		t.Fatalf("invalid abc value")
+	}
+	if ret["def"] != c.Def {
+		t.Fatalf("invalid abc value")
+	}
+	if ret["ghi"] != c.Ghi {
+		t.Fatalf("invalid abc value")
+	}
+
+}

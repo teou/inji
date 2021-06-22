@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -560,4 +561,26 @@ func isZeroOfUnderlyingType(x interface{}) bool {
 		}
 	}
 	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
+}
+
+func ReflectRegFields(v interface{}) map[string]interface{} {
+	ret := make(map[string]interface{})
+
+	vfe := reflect.ValueOf(v).Elem()
+	t := vfe.Type()
+	if t.Kind() != reflect.Struct {
+		panic(fmt.Sprintf("value must be a struct pointer %v %v", v, t))
+	}
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		vf := vfe.Field(i)
+
+		name := f.Name
+		name = strings.ToLower(string(name[0])) + name[1:]
+		vi := vf.Interface()
+
+		Reg(name, vi)
+		ret[name] = vi
+	}
+	return ret
 }
