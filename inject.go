@@ -286,9 +286,49 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 			}
 			_, canNilStr, _ := structtag.Extract("cannil", string(f.Tag))
 			_, nilableStr, _ := structtag.Extract("nilable", string(f.Tag))
+			_, compound, _ := structtag.Extract("compound", string(f.Tag))
 			canNil := false
 			if canNilStr == "true" || nilableStr == "true" {
 				canNil = true
+			}
+
+			if compound == "true" {
+				if f.Type.Kind() != reflect.Slice {
+					return nil, fmt.Errorf("dependency field=%s,tag=%s not a list interface tag", f.Name, tag)
+				}
+				if f.Type.Elem().Kind() != reflect.Interface {
+					return nil, fmt.Errorf("dependency field=%s,tag=%s not a list interface tag", f.Name, tag)
+				}
+				var names []string
+				sv := reflect.New(f.Type)
+				sve := sv.Elem()
+				ims := implmap.GetAll()
+				for k, v := range ims {
+					for _, i := range v {
+						if i.Implements(f.Type.Elem()) {
+							found, ok := g.find(k)
+							if !ok {
+								_, err := g.register(k, reflect.NewAt(i.Elem(), nil).Interface(), singletonTag, noFill)
+								if err != nil {
+									return nil, err
+								}
+							}
+							found, ok = g.find(k)
+							if !ok {
+								return nil, fmt.Errorf("dependency %s not found in object %s:%v", name, k, i.Kind().String())
+							}
+							newArr := make([]reflect.Value, 0)
+							middV := reflect.ValueOf(found.Value)
+							newArr = append(newArr, middV)
+							resArr := reflect.Append(sve, newArr...)
+							sve.Set(resArr)
+							names = append(names, k)
+						}
+					}
+				}
+				fmt.Printf("dependency field=%s use compound interface list %v\n", f.Name, names)
+				vf.Set(sve)
+				continue
 			}
 
 			var found *Object
@@ -584,3 +624,50 @@ func ReflectRegFields(v interface{}) map[string]interface{} {
 	}
 	return ret
 }
+
+//func FillInteface(s interface{}) ([]string,error){
+//	//var resArr reflect.Type
+//	var names []string
+//	log.Debug(context.Background(),"currnet register interface name","names", cs)
+//	sT := reflect.TypeOf(s)
+//	if sT.Kind()!=reflect.Ptr{
+//		return names, fmt.Errorf("value must be a pointer =>%v",sT.Kind())
+//	}
+//
+//	tT :=sT.Elem().Elem()
+//	if tT.Kind()!=reflect.Interface{
+//		return names,fmt.Errorf("slice element must be a interface=>%v",sT.Kind())
+//	}
+//	sv := reflect.ValueOf(s)
+//	sve := sv.Elem()
+//
+//	rmx.RLock()
+//	defer rmx.RUnlock()
+//	for _,name := range cs {
+//		found, ok := inji.FindWithoutLock(name)
+//		if !ok{
+//			continue
+//		}
+//
+//		t1 := reflect.TypeOf(found)
+//
+//		middyV := reflect.ValueOf(found)
+//
+//		if !t1.Implements(tT){
+//			continue
+//		}
+//		types := implmap.Get("b")
+//		for _,t := range types {
+//			if t.Implements(tT){
+//				fmt.Println(t.Elem().String())
+//			}
+//		}
+//		fmt.Println(1111)
+//		newArr := make([]reflect.Value,0)
+//		newArr=append(newArr,middyV)
+//		resArr :=reflect.Append(sve,newArr...)
+//		sve.Set(resArr)
+//		names=append(names,name)
+//	}
+//	return names,nil
+//}
