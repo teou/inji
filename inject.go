@@ -507,7 +507,7 @@ func (g *Graph) sPrintTree(path string, o *Object, buf *bytes.Buffer) error {
 		childPath = strings.Replace(childPath, "└", " ", -1)
 		childPath = strings.Replace(childPath, "├", "│", -1)
 		childPath = strings.Replace(childPath, "─", " ", -1)
-		childPath = strings.Replace(childPath, "┌", "|", -1)
+		childPath = strings.Replace(childPath, "┌", "│", -1)
 
 		t := o.reflectType.Elem()
 
