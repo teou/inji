@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/teou/implmap"
@@ -595,4 +596,95 @@ func TestReflectRegFields(t *testing.T) {
 		t.Fatalf("invalid abc value")
 	}
 
+}
+
+func TestGraphPrintTree(t *testing.T) {
+	implmap.Add("test4", reflect.TypeOf((*Test4)(nil)))
+	InitDefault()
+	defer Close()
+
+	_, err := Register("test2", (*Test2)(nil))
+	if err == nil {
+		t.Error("conf is not registered need error")
+		return
+	}
+
+	i1 := 123
+	_, err = Register("int1", &i1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	_, err = Register("conf", "##conf1")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var t2tmp interface{}
+	t2tmp, err = Register("test2", (*Test2)(nil))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t2t, ok := t2tmp.(*Test2)
+	if !ok || t2t == nil {
+		t.Error("invalid t2t ", t2tmp)
+		return
+	}
+
+	_, err = Register("test3", (*Test3)(nil))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = Register("test5", (*Test5)(nil))
+	if err != nil {
+		t.Error("test5 registered fail", err)
+		return
+	}
+
+	tree1 := `dependence tree:
+┌── int1(*int=0xc0000161d8)
+├── conf(string=##conf1)
+├── *github.com/teou/inji.Test1(*inji.Test1=0xc00000c180)
+│    ├── conf(string=##conf1)
+│    └── int1(*int=0xc0000161d8)
+├── test2(*inji.Test2=0xc00000e040)
+│    └── *github.com/teou/inji.Test1(*inji.Test1=0xc00000c180)
+│         ├── conf(string=##conf1)
+│         └── int1(*int=0xc0000161d8)
+├── test3(*inji.Test3=0xc000054570)
+│    └── test2(*inji.Test2=0xc00000e040)
+│         └── *github.com/teou/inji.Test1(*inji.Test1=0xc00000c180)
+│              ├── conf(string=##conf1)
+│              └── int1(*int=0xc0000161d8)
+├── test4(*inji.Test4=0xc0000545b0)
+│    └── test3(*inji.Test3=0xc000054570)
+│         └── test2(*inji.Test2=0xc00000e040)
+│              └── *github.com/teou/inji.Test1(*inji.Test1=0xc00000c180)
+│                   ├── conf(string=##conf1)
+│                   └── int1(*int=0xc0000161d8)
+└── test5(*inji.Test5=0xc000054590)
+     └── test4(*inji.Test4=0xc0000545b0)
+          └── test3(*inji.Test3=0xc000054570)
+               └── test2(*inji.Test2=0xc00000e040)
+                    └── *github.com/teou/inji.Test1(*inji.Test1=0xc00000c180)
+                         ├── conf(string=##conf1)
+                         └── int1(*int=0xc0000161d8)
+`
+	tree2 := GraphPrintTree()
+	if !compareTree(tree1, tree2) {
+		fmt.Println("tree expected=", tree1)
+		fmt.Println("tree actual=", tree2)
+		t.Error("tree2 is not expected")
+	}
+}
+
+func compareTree(str1 string, str2 string) bool {
+	re := regexp.MustCompile(`=0x[^)]+`)
+	str1 = re.ReplaceAllString(str1, "")
+	str2 = re.ReplaceAllString(str2, "")
+	return str1 == str2
 }
