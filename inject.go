@@ -523,6 +523,10 @@ func (g *Graph) sPrintTree(path string, o *Object, buf *bytes.Buffer) error {
 				continue
 			}
 
+			if len(tag) == 0 {
+				tag = getTypeName(structFiled.Type)
+			}
+
 			_, ok = g.find(tag)
 			if ok {
 				tags = append(tags, tag)
