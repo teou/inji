@@ -10,6 +10,12 @@ func InitDefault() {
 	_g = NewGraph()
 }
 
+func InitDefaultOnce() {
+	if _g == nil {
+		InitDefault()
+	}
+}
+
 func Close() {
 	_g.Close()
 }
