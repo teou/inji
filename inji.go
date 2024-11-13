@@ -73,3 +73,8 @@ func GraphLen() int {
 func GraphPrint() string {
 	return _g.SPrint()
 }
+
+func GraphPrintTree() string {
+	return _g.SPrintTree()
+}
+

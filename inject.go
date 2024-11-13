@@ -20,6 +20,7 @@ create new struct on every inject
 package inji
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -276,7 +277,7 @@ func (g *Graph) register(name string, value interface{}, singleton bool, noFill 
 
 			if f.Anonymous || !vf.CanSet() {
 				return nil, fmt.Errorf("inject tag must on a public field!field=%s,type=%s", f.Name, t.Name())
-				continue
+				// continue // useless code
 			}
 
 			_, singletonStr, _ := structtag.Extract("singleton", string(f.Tag))
@@ -468,6 +469,83 @@ func (g *Graph) sPrint() string {
 	}
 	ret = ret + "]"
 	return ret
+}
+
+func (g *Graph) SPrintTree() string {
+	g.l.RLock()
+	defer g.l.RUnlock()
+	buf := bytes.NewBufferString("dependence tree:\n")
+
+	len := g.named.Len()
+	i := 0
+	iter := g.named.IterFunc()
+	for kv, ok := iter(); ok; kv, ok = iter() {
+		head := "├── "
+		if i == 0 {
+			head = "┌── "
+		} else if i == len-1 {
+			head = "└── "
+		}
+		i++
+		g.sPrintTree(head, kv.Value.(*Object), buf)
+	}
+	return buf.String()
+}
+
+func (g *Graph) sPrintTree(path string, o *Object, buf *bytes.Buffer) error {
+	value := ""
+	if o.reflectType.Kind() == reflect.Ptr {
+		value = fmt.Sprintf("%p", o.Value)
+	} else {
+		value = fmt.Sprintf("%v", o.Value)
+	}
+	show := fmt.Sprintf("%s%s(%v=%v)\n", path, o.Name, o.reflectType, value)
+	buf.WriteString(show)
+
+	if isStructPtr(o.reflectType) {
+		childPath := path
+		childPath = strings.Replace(childPath, "└", " ", -1)
+		childPath = strings.Replace(childPath, "├", "│", -1)
+		childPath = strings.Replace(childPath, "─", " ", -1)
+		childPath = strings.Replace(childPath, "┌", "│", -1)
+
+		t := o.reflectType.Elem()
+
+		// load tags of injected child
+		var tags []string
+		for i := 0; i < t.NumField(); i++ {
+			structFiled := t.Field(i)
+			ok, tag, err := structtag.Extract("inject", string(structFiled.Tag))
+			if err != nil {
+				return fmt.Errorf("extract tag fail,f=%s,err=%v", structFiled.Name, err)
+			}
+			if !ok {
+				continue
+			}
+
+			if len(tag) == 0 {
+				tag = getTypeName(structFiled.Type)
+			}
+
+			_, ok = g.find(tag)
+			if ok {
+				tags = append(tags, tag)
+			}
+		}
+
+		for i, tag := range tags {
+			corner := ""
+			if i == len(tags)-1 {
+				corner = childPath + " └── "
+			} else {
+				corner = childPath + " ├── "
+			}
+			childObject, _ := g.find(tag)
+			g.sPrintTree(corner, childObject, buf)
+		}
+	}
+
+	return nil
 }
 
 //beaware of the close order when use g.Close!
